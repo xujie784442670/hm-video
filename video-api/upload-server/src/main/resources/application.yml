@@ -1,0 +1,11 @@
+server:
+  port: 8080
+hm-upload:
+  ftp:
+    host: 127.0.0.1  # FTP服务器地址
+    port: 21 # FTP服务器端口
+    username: anonymous # FTP服务器用户名
+    password:  # FTP服务器密码
+    file-type: BINARY_FILE_TYPE # FTP服务器文件类型
+    encoding: UTF-8 # FTP服务器编码
+    resource-host: http://localhost # 资源服务器地址
