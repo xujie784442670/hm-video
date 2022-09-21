@@ -35,4 +35,20 @@ public class AccountController {
             return HttpResult.error(10081,"邮箱修改失败");
         }
     }
+    @GetMapping("/logicDeleteAccount")
+    public HttpResult logicDeleteAccount(@RequestParam("id") Long id){
+        int i = accountService.logicDeleteById(id);
+        if(i>0){
+            Map<String, Object> rs=new HashMap<>();
+            rs.put("code",0);
+            rs.put("message","封禁成功");
+            return HttpResult.ok(rs);
+        }
+        Map<String, Object> rs=new HashMap<>();
+        rs.put("code",10021);
+        rs.put("message","封禁失败");
+        return HttpResult.ok(rs);
+
+    };
+
 }
