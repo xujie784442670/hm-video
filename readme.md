@@ -410,7 +410,7 @@
 	"message":"查询成功",//描述
 	//返回的数据
 	"data":{
-        "verificationCode":"xxxxxx"
+        "verificationCode":"xxxxxx"//邮箱验证码
 	}
 }
 ```
