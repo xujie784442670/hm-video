@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.jasonone.mapper.PlayRecordMapper">
+
+    <resultMap id="BaseResultMap" type="level3.project.bean.PlayRecord">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="accountId" column="account_id" jdbcType="BIGINT"/>
+            <result property="videoId" column="video_id" jdbcType="BIGINT"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <resultMap id="DetailMap" type="playRecord">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="accountId" column="account_id" jdbcType="BIGINT"/>
+        <result property="videoId" column="video_id" jdbcType="BIGINT"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="playTime" column="play_time" jdbcType="TIMESTAMP"/>
+        <collection property="video"
+                    ofType="video"
+                    column="video_id"
+                    select="level3.project.mapper.VideoMapper.findDetailInfoById"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        id,account_id,video_id,
+        create_time
+    </sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from play_record
+        where  id = #{id,jdbcType=BIGINT} 
+    </select>
+    <select id="getViewsByVideoId" resultType="integer">
+        select count(1) from play_record where video_id=#{videoid}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from play_record
+        where  id = #{id,jdbcType=BIGINT} 
+    </delete>
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="level3.project.bean.PlayRecord" useGeneratedKeys="true">
+        insert into play_record
+        (account_id,video_id)
+        values (#{accountId,jdbcType=BIGINT},#{videoId,jdbcType=BIGINT})
+    </insert>
+
+    <select id="findOne"  resultType="int">
+        select play_time
+        from play_record where account_id=#{accountId} and video_id=#{videoId};
+    </select>
+    <select id="findAll" resultMap="DetailMap">
+        select * from play_record where account_id=#{accountId}
+    </select>
+    <select id="getViews" resultType="java.lang.Integer">
+        select count(1) from play_record where video_id=#{id}
+    </select>
+    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="level3.project.bean.PlayRecord" useGeneratedKeys="true">
+        insert into play_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="id != null">id,</if>
+                <if test="accountId != null">account_id,</if>
+                <if test="videoId != null">video_id,</if>
+                <if test="createTime != null">create_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="id != null">#{id,jdbcType=BIGINT},</if>
+                <if test="accountId != null">#{accountId,jdbcType=BIGINT},</if>
+                <if test="videoId != null">#{videoId,jdbcType=BIGINT},</if>
+                <if test="createTime != null">#{createTime,jdbcType=TIMESTAMP},</if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="level3.project.bean.PlayRecord">
+        update play_record
+        <set>
+                <if test="accountId != null">
+                    account_id = #{accountId,jdbcType=BIGINT},
+                </if>
+                <if test="videoId != null">
+                    video_id = #{videoId,jdbcType=BIGINT},
+                </if>
+                <if test="createTime != null">
+                    create_time = #{createTime,jdbcType=TIMESTAMP},
+                </if>
+        </set>
+        where   id = #{id,jdbcType=BIGINT} 
+    </update>
+    <update id="updateByPrimaryKey" parameterType="level3.project.bean.PlayRecord">
+        update play_record
+        set 
+            account_id =  #{accountId,jdbcType=BIGINT},
+            video_id =  #{videoId,jdbcType=BIGINT},
+            create_time =  #{createTime,jdbcType=TIMESTAMP}
+        where   id = #{id,jdbcType=BIGINT} 
+    </update>
+    <update id="update">
+        update play_record
+        set play_time=#{playTime}
+        where account_Id=#{accountId} and video_id=#{videoId}
+    </update>
+</mapper>
