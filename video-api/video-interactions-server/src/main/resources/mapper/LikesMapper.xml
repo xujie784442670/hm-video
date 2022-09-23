@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.jasonone.mapper.LikesMapper">
+
+    <resultMap id="BaseResultMap" type="cn.jasonone.bean.Likes">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="videoId" column="video_id" jdbcType="BIGINT"/>
+            <result property="commentId" column="comment_id" jdbcType="BIGINT"/>
+            <result property="type" column="type" jdbcType="TINYINT"/>
+            <result property="accountId" column="account_id" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,video_id,comment_id,
+        type,account_id
+    </sql>
+    <select id="getLikesByCommentId" resultType="int">
+        select count(1) from likes where comment_id=#{commentId}
+    </select>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from likes
+        where  id = #{id,jdbcType=BIGINT} 
+    </select>
+    <select id="selectByVideoId" resultType="cn.jasonone.bean.Likes">
+        select * from likes where video_id=#{id}
+    </select>
+    <select id="selectByCommentId" resultType="cn.jasonone.bean.Likes">
+        select * from likes where comment_id=#{id}
+    </select>
+    <select id="findLike1" resultType="java.lang.Integer" parameterType="cn.jasonone.bean.Likes">
+        select * from likes
+                 where video_id=#{videoId} and account_id=#{accountId} and type=#{type}
+    </select>
+    <select id="findLike2" resultType="java.lang.Integer" parameterType="cn.jasonone.bean.Likes">
+        select * from likes
+        where comment_id=#{commentId} and account_id=#{accountId} and type=#{type}
+    </select>
+    <select id="countSelectLikeid" resultType="java.lang.Integer">
+        select count(*) from likes where account_id=#{id}
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from likes
+        where  id = #{id,jdbcType=BIGINT} 
+    </delete>
+    <delete id="delVideoLike" parameterType="cn.jasonone.bean.Likes">
+        delete from likes where video_id=#{videoId} and account_id=#{accountId} and type=#{type}
+    </delete>
+    <delete id="delCommentLike" parameterType="cn.jasonone.bean.Likes">
+        delete from likes where comment_id=#{commentId} and account_id=#{accountId} and type=#{type}
+    </delete>
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.jasonone.bean.Likes" useGeneratedKeys="true">
+        insert into likes
+        ( id,video_id,comment_id
+        ,type,account_id)
+        values (#{id,jdbcType=BIGINT},#{videoId,jdbcType=BIGINT},#{commentId,jdbcType=BIGINT}
+        ,#{type,jdbcType=TINYINT},#{accountId,jdbcType=BIGINT})
+    </insert>
+
+    <insert id="addCommentLike" parameterType="cn.jasonone.bean.Likes">
+        insert into likes
+            (comment_id,account_id,type)
+            value (#{commentId},#{accountId},#{type})
+    </insert>
+    <insert id="addVideoLike" parameterType="cn.jasonone.bean.Likes">
+        insert into likes
+            (video_id,account_id,type)
+            value (#{videoId},#{accountId},#{type})
+    </insert>
+    <select id="getVideoLikes" resultType="integer">
+        select count(1) from likes where video_id=#{id}
+    </select>
+    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="cn.jasonone.bean.Likes" useGeneratedKeys="true">
+        insert into likes
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="id != null">id,</if>
+                <if test="videoId != null">video_id,</if>
+                <if test="commentId != null">comment_id,</if>
+                <if test="type != null">type,</if>
+                <if test="accountId != null">account_id,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="id != null">#{id,jdbcType=BIGINT},</if>
+                <if test="videoId != null">#{videoId,jdbcType=BIGINT},</if>
+                <if test="commentId != null">#{commentId,jdbcType=BIGINT},</if>
+                <if test="type != null">#{type,jdbcType=TINYINT},</if>
+                <if test="accountId != null">#{accountId,jdbcType=BIGINT},</if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="cn.jasonone.bean.Likes">
+        update likes
+        <set>
+                <if test="videoId != null">
+                    video_id = #{videoId,jdbcType=BIGINT},
+                </if>
+                <if test="commentId != null">
+                    comment_id = #{commentId,jdbcType=BIGINT},
+                </if>
+                <if test="type != null">
+                    type = #{type,jdbcType=TINYINT},
+                </if>
+                <if test="accountId != null">
+                    account_id = #{accountId,jdbcType=BIGINT},
+                </if>
+        </set>
+        where   id = #{id,jdbcType=BIGINT} 
+    </update>
+    <update id="updateByPrimaryKey" parameterType="cn.jasonone.bean.Likes">
+        update likes
+        set 
+            video_id =  #{videoId,jdbcType=BIGINT},
+            comment_id =  #{commentId,jdbcType=BIGINT},
+            type =  #{type,jdbcType=TINYINT},
+            account_id =  #{accountId,jdbcType=BIGINT}
+        where   id = #{id,jdbcType=BIGINT} 
+    </update>
+
+    <select id="selectByVideoIdInt" resultType="int">
+        SELECT COUNT(1) FROM likes WHERE video_id=#{Vid}
+    </select>
+</mapper>

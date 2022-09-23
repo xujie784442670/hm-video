@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.jasonone.mapper.VideoMapper">
+
+    <resultMap id="BaseResultMap" type="cn.jasonone.bean.Video">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="title" column="title" jdbcType="VARCHAR"/>
+        <result property="typeId" column="type_id" jdbcType="BIGINT"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="videoUrl" column="video_url" jdbcType="VARCHAR"/>
+        <result property="coverUrl" column="cover_url" jdbcType="VARCHAR"/>
+        <result property="accountId" column="account_id" jdbcType="BIGINT"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="logicalDelete" column="logical_delete" jdbcType="TINYINT"/>
+    </resultMap>
+    <resultMap id="DetailVideoMap" type="cn.jasonone.bean.Video">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="title" column="title" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="videoUrl" column="video_url" jdbcType="VARCHAR"/>
+        <result property="typeId" column="type_id" jdbcType="BIGINT"/>
+        <result property="coverUrl" column="cover_url" jdbcType="VARCHAR"/>
+        <result property="accountId" column="account_id" jdbcType="BIGINT"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="logicalDelete" column="logical_delete" jdbcType="TINYINT"/>
+        <collection property="nickName"
+                    ofType="String"
+                    column="account_id"
+                    select="level3.project.mapper.AccountMapper.findNickNameById"/>
+        <collection property="type"
+                    ofType="string"
+                    column="type_id"
+                    select="level3.project.mapper.VideoTypeMapper.findType"/>
+        <collection property="barrages"
+                    ofType="integer"
+                    column="id"
+                    select="level3.project.mapper.BarrageMapper.getCountByVideoId"/>
+        <collection property="views"
+                    ofType="integer"
+                    column="id"
+                    select="level3.project.mapper.PlayRecordMapper.getViewsByVideoId"/>
+        <collection property="collections"
+                    ofType="integer"
+                    column="id"
+                    select="level3.project.mapper.CollectionMapper.getCollectionCountByVideoId"/>
+        <collection property="comments"
+                    ofType="integer"
+                    column="id"
+                    select="level3.project.mapper.VideoCommentMapper.getCommentsCountByVideoId"/>
+        <collection property="likes"
+                    ofType="integer"
+                    column="id"
+                    select="level3.project.mapper.LikesMapper.getVideoLikes"/>
+    </resultMap>
+    <resultMap id="findVideoDetail" type="cn.jasonone.bean.Video">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="title" column="title" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="videoUrl" column="video_url" jdbcType="VARCHAR"/>
+        <result property="typeId" column="type_id" jdbcType="BIGINT"/>
+        <result property="coverUrl" column="cover_url" jdbcType="VARCHAR"/>
+        <result property="accountId" column="account_id" jdbcType="BIGINT"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="logicalDelete" column="logical_delete" jdbcType="TINYINT"/>
+        <collection property="account"
+                    ofType="cn.jasonone.bean.Account"
+                    column="account_id"
+                    select="cn.jasonone.mapper.AccountMapper.findById"/>
+    </resultMap>
+    <resultMap id="allVideoManageVo" type="cn.jasonone.vo.VideoManageVo">
+        <result property="id" column="视频id"/>
+        <result property="title" column="视频标题"/>
+        <result property="videoType" column="视频类型"/>
+        <result property="coverUrl" column="视频封面地址"/>
+        <result property="nickName" column="视频发布者"/>
+        <result property="createTime" column="视频创建时间"/>
+        <result property="videoUrl" column="视频内容"/>
+        <result property="status" column="视频状态"/>
+        <result property="logicDelete" column="逻辑删除"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,title,type_id,
+        create_time,video_url,cover_url,
+        account_id,
+        status,logical_delete
+    </sql>
+    <select id="findDetailInfo" resultMap="DetailVideoMap">
+        #         select distinct v.title 视频标题, v.create_time 视频上传时间 ,vt.type 视频类型, a.nick_name 上传用户 ,v.cover_url 视频封面 ,v.video_url 视频内容
+#         from account a inner join video v on a.ID = v.account_id,
+#              video inner join video_type vt on video.type_id = vt.id;
+        select *
+        from video where status=1 and logical_delete =0
+    </select>
+    <select id="findDetailInfoById" resultMap="DetailVideoMap">
+        select *
+            from video where id=#{id} and status=1 and logical_delete =0
+    </select>
+    <select id="findUrlById" resultType="String">
+        select video_url
+        from video
+        where id = #{id}
+    </select>
+    <select id="findCoverUrlById" resultType="String">
+        select cover_url
+        from video
+        where id = #{id}
+    </select>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from video
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <select id="findAll" resultMap="DetailVideoMap">
+        select
+        <include refid="Base_Column_List"/>
+        from video
+        <where>
+            <if test="title != null and title != ''">
+                and title like concat('%',#{title}, '%')
+            </if>
+            <if test="typeId != null">
+                and type_id = #{typeId,jdbcType=BIGINT}
+            </if>
+            <if test="createTime != null">
+                <if test="createdTime[0] !=null ">
+                    and created_time &gt;= #{createdTime[0],javaType=java.time.DateTime}
+                </if>
+                <if test="createdTime[1] !=null ">
+                    and created_time &lt;= #{createdTime[1],javaType=java.time.DateTime}
+                </if>
+            </if>
+            <if test="views != null">
+                and Views &gt;= #{views,jdbcType=BIGINT}
+            </if>
+            <if test="likes != null">
+                and likes &gt;= #{likes,jdbcType=BIGINT}
+            </if>
+            <if test="accountId != null">
+                and account_id = #{accountId,jdbcType=BIGINT}
+            </if>
+            and status=1 and logical_delete = 0
+        </where>
+    </select>
+    <select id="findByTypeId" resultMap="DetailVideoMap">
+        select *
+        from video
+        where type_id = #{typeId} and status=1 and logical_delete = 0
+    </select>
+    <select id="selectByAccountId" resultMap="DetailVideoMap">
+        select *
+        from video
+        where account_id = #{id}
+    </select>
+    <select id="findVideoManageVo" resultMap="allVideoManageVo">
+        select v.id 视频id, v.title 视频标题,vt.type 视频类型,v.cover_url 视频封面地址,a.NICK_NAME 视频发布者,v.create_time
+        视频创建时间,v.video_url 视频内容,v.status 视频状态,v.logical_delete 逻辑删除
+        from video v
+        inner join account a on v.account_id = a.ID
+        inner join video_type vt on v.type_id = vt.id
+        <where>
+            <if test="title!=null and title!=''">
+                and v.title like concat('%',#{title},'%')
+            </if>
+            <if test="typeId!=null">
+                and v.type_id=#{typeId}
+            </if>
+            <if test="nickName!=null and nickName!=''">
+                and a.NICK_NAME like concat('%',#{nickName},'%')
+            </if>
+            <if test="createTimes != null">
+                <if test="createTimes[0] !=null ">
+                    and v.create_time &gt;= #{createTimes[0],javaType=java.util.Date}
+                </if>
+                <if test="createTimes[1] !=null ">
+                    and v.create_time &lt;= #{createTimes[1],javaType=java.util.Date}
+                </if>
+            </if>
+            <if test="state!=null">
+                <if test="state==0">
+                    and v.status=0 and v.logical_delete=0
+                </if>
+                <if test="state==1">
+                    and v.status=1 and v.logical_delete=0
+                </if>
+                <if test="state==2">
+                    and v.status=2 and v.logical_delete=0
+                </if>
+                <if test="state==3">
+                    and v.logical_delete=1
+                </if>
+            </if>
+        </where>
+        order by 视频创建时间
+    </select>
+    <select id="findById" resultMap="findVideoDetail">
+        select * from video
+            where id=#{id}
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete
+        from video
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.jasonone.bean.Video"
+            useGeneratedKeys="true">
+        insert into video
+        ( title, type_id
+        , video_url, cover_url
+        , account_id)
+        values ( #{title,jdbcType=VARCHAR}, #{typeId,jdbcType=BIGINT}
+               , #{videoUrl,jdbcType=VARCHAR}, #{coverUrl,jdbcType=VARCHAR}, #{accountId,jdbcType=BIGINT})
+    </insert>
+    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="cn.jasonone.bean.Video"
+            useGeneratedKeys="true">
+        insert into video
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="title != null">title,</if>
+            <if test="typeId != null">type_id,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="videoUrl != null">video_url,</if>
+            <if test="coverUrl != null">cover_url,</if>
+            <if test="views != null">Views,</if>
+            <if test="likes != null">likes,</if>
+            <if test="accountId != null">account_id,</if>
+            <if test="status != null">statu s,</if>
+            <if test="logicalDelete != null">logical_delete,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id,jdbcType=BIGINT},</if>
+            <if test="title != null">#{title,jdbcType=VARCHAR},</if>
+            <if test="typeId != null">#{typeId,jdbcType=BIGINT},</if>
+            <if test="createTime != null">#{createTime,jdbcType=TIMESTAMP},</if>
+            <if test="videoUrl != null">#{videoUrl,jdbcType=VARCHAR},</if>
+            <if test="coverUrl != null">#{coverUrl,jdbcType=VARCHAR},</if>
+            <if test="views != null">#{views,jdbcType=BIGINT},</if>
+            <if test="likes != null">#{likes,jdbcType=BIGINT},</if>
+            <if test="accountId != null">#{accountId,jdbcType=BIGINT},</if>
+            <if test="status != null">#{status,jdbcType=TINYINT},</if>
+            <if test="logicalDelete != null">#{logicalDelete,jdbcType=TINYINT},</if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="cn.jasonone.bean.Video">
+        update video
+        <set>
+            <if test="title != null">
+                title = #{title,jdbcType=VARCHAR},
+            </if>
+            <if test="typeId != null">
+                type_id = #{typeId,jdbcType=BIGINT},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="videoUrl != null">
+                video_url = #{videoUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="coverUrl != null">
+                cover_url = #{coverUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="accountId != null">
+                account_id = #{accountId,jdbcType=BIGINT},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="logicalDelete != null">
+                logical_delete = #{logicalDelete,jdbcType=TINYINT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="cn.jasonone.bean.Video">
+        update video
+        set title          = #{title,jdbcType=VARCHAR},
+            type_id        = #{typeId,jdbcType=BIGINT},
+            create_time    = #{createTime,jdbcType=TIMESTAMP},
+            video_url      = #{videoUrl,jdbcType=VARCHAR},
+            cover_url      = #{coverUrl,jdbcType=VARCHAR},
+            account_id     = #{accountId,jdbcType=BIGINT},
+            status         = #{status,jdbcType=TINYINT},
+            logical_delete = #{logicalDelete,jdbcType=TINYINT}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="logicalDelete">
+        update video
+        set logical_delete = 1
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateTitle">
+        update video
+            set  title = #{title}
+            where id=#{id}
+    </update>
+    <update id="logicalDel">
+        update video
+        set logical_delete= 1
+        where id=#{id}
+    </update>
+
+    <select id="selectVideoByAccountId" resultType="java.lang.Long">
+        select  id from video where  account_id=#{accountId}
+
+    </select>
+</mapper>
