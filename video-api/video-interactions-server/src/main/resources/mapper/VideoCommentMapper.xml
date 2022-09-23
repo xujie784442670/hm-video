@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.jasonone.mapper.VideoCommentMapper">
+
+    <resultMap id="BaseResultMap" type="level3.project.bean.VideoComment">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="videoId" column="video_id" jdbcType="BIGINT"/>
+            <result property="accountId" column="account_id" jdbcType="BIGINT"/>
+            <result property="content" column="content" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="logicalDelete" column="logical_delete" jdbcType="TINYINT"/>
+            <result property="pid" column="pid" jdbcType="BIGINT"/>
+    </resultMap>
+    <resultMap id="VideoComments" type="level3.project.bean.VideoComment">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="videoId" column="video_id" jdbcType="BIGINT"/>
+        <result property="accountId" column="account_id" jdbcType="BIGINT"/>
+        <result property="content" column="content" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="logicalDelete" column="logical_delete" jdbcType="TINYINT"/>
+        <result property="pid" column="pid" jdbcType="BIGINT"/>
+        <collection property="sons"
+                    ofType="videoComment"
+                    column="id"
+                    select="level3.project.mapper.VideoCommentMapper.findCommentByPid"/>
+        <collection property="likes"
+                    ofType="long"
+                    column="id"
+                    select="level3.project.mapper.LikesMapper.getLikesByCommentId"/>
+        <collection property="nickName"
+                    ofType="string"
+                    column="account_id"
+                    select="level3.project.mapper.AccountMapper.findNickNameById"/>
+        <collection property="avatar"
+                    ofType="string"
+                    column="account_id"
+                    select="level3.project.mapper.AccountMapper.findAvatarById"/>
+    </resultMap>
+    <resultMap id="VideoComments2" type="level3.project.bean.VideoComment">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="videoId" column="video_id" jdbcType="BIGINT"/>
+        <result property="accountId" column="account_id" jdbcType="BIGINT"/>
+        <result property="content" column="content" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="logicalDelete" column="logical_delete" jdbcType="TINYINT"/>
+        <result property="pid" column="pid" jdbcType="BIGINT"/>
+        <collection property="nickName"
+                    ofType="string"
+                    column="account_id"
+                    select="level3.project.mapper.AccountMapper.findNickNameById"/>
+        <collection property="avatar"
+                    ofType="string"
+                    column="account_id"
+                    select="level3.project.mapper.AccountMapper.findAvatarById"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        id,video_id,account_id,
+        content,create_time,logical_delete,
+        pid
+    </sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from video_comment
+        where  id = #{id,jdbcType=BIGINT} 
+    </select>
+    <select id="findAllByVideoId" resultMap="VideoComments">
+        select * from video_comment
+                where video_id=#{videoId} and pid is null
+    </select>
+    <!--通过pid查询评论-->
+    <select id="findCommentByPid" resultMap="VideoComments">
+        select v.* ,a.nick_name ,a.avatar from video_comment v,account a where v.account_id=a.ID and v.pid=#{pid}
+    </select>
+    <select id="findAllByVideoId1" resultMap="VideoComments2">
+        select * from  video_comment where video_id=#{id}
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from video_comment
+        where  id = #{id,jdbcType=BIGINT} 
+    </delete>
+
+    <select id="getCommentsCountByVideoId" resultType="integer">
+        select count(*) from video_comment where video_id=#{id}
+    </select>
+
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="level3.project.bean.VideoComment" useGeneratedKeys="true">
+        insert into video_comment
+        ( id,video_id,account_id
+        ,content,create_time,logical_delete
+        ,pid)
+        values (#{id,jdbcType=BIGINT},#{videoId,jdbcType=BIGINT},#{accountId,jdbcType=BIGINT}
+        ,#{content,jdbcType=VARCHAR},#{createTime,jdbcType=TIMESTAMP},#{logicalDelete,jdbcType=TINYINT}
+        ,#{pid,jdbcType=BIGINT})
+    </insert>
+    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="level3.project.bean.VideoComment" useGeneratedKeys="true">
+        insert into video_comment
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="id != null">id,</if>
+                <if test="videoId != null">video_id,</if>
+                <if test="accountId != null">account_id,</if>
+                <if test="content != null">content,</if>
+                <if test="createTime != null">create_time,</if>
+                <if test="logicalDelete != null">logical_delete,</if>
+                <if test="pid != null">pid,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="id != null">#{id,jdbcType=BIGINT},</if>
+                <if test="videoId != null">#{videoId,jdbcType=BIGINT},</if>
+                <if test="accountId != null">#{accountId,jdbcType=BIGINT},</if>
+                <if test="content != null">#{content,jdbcType=VARCHAR},</if>
+                <if test="createTime != null">#{createTime,jdbcType=TIMESTAMP},</if>
+                <if test="logicalDelete != null">#{logicalDelete,jdbcType=TINYINT},</if>
+                <if test="pid != null">#{pid,jdbcType=BIGINT},</if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="level3.project.bean.VideoComment">
+        update video_comment
+        <set>
+                <if test="videoId != null">
+                    video_id = #{videoId,jdbcType=BIGINT},
+                </if>
+                <if test="accountId != null">
+                    account_id = #{accountId,jdbcType=BIGINT},
+                </if>
+                <if test="content != null">
+                    content = #{content,jdbcType=VARCHAR},
+                </if>
+                <if test="createTime != null">
+                    create_time = #{createTime,jdbcType=TIMESTAMP},
+                </if>
+                <if test="logicalDelete != null">
+                    logical_delete = #{logicalDelete,jdbcType=TINYINT},
+                </if>
+                <if test="pid != null">
+                    pid = #{pid,jdbcType=BIGINT},
+                </if>
+        </set>
+        where   id = #{id,jdbcType=BIGINT} 
+    </update>
+    <update id="updateByPrimaryKey" parameterType="level3.project.bean.VideoComment">
+        update video_comment
+        set 
+            video_id =  #{videoId,jdbcType=BIGINT},
+            account_id =  #{accountId,jdbcType=BIGINT},
+            content =  #{content,jdbcType=VARCHAR},
+            create_time =  #{createTime,jdbcType=TIMESTAMP},
+            logical_delete =  #{logicalDelete,jdbcType=TINYINT},
+            pid =  #{pid,jdbcType=BIGINT}
+        where   id = #{id,jdbcType=BIGINT} 
+    </update>
+
+    <select id="selectByVideoIdInt" resultType="int">
+        select count(1) from video_comment where video_id=#{Vid}
+    </select>
+</mapper>
